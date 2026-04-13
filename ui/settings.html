@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>tywan 設定</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0a0a0b; --surface: rgba(255,255,255,0.02); --border: rgba(255,255,255,0.06);
+    --text: #e8e8e8; --muted: #666; --accent: #fb923c; --accent-bg: rgba(251,146,60,0.1);
+    --accent-border: rgba(251,146,60,0.4); --radius: 10px;
+  }
+  body {
+    background: linear-gradient(160deg, #0a0a0b, #111113 40%, #0d0d0f);
+    color: var(--text); font-family: 'Microsoft JhengHei', 'Segoe UI', sans-serif;
+    min-height: 100vh; padding: 32px 24px;
+  }
+  .container { max-width: 800px; margin: 0 auto; }
+
+  /* Header */
+  .header { display: flex; align-items: center; gap: 14px; margin-bottom: 32px; }
+  .logo {
+    width: 42px; height: 42px; border-radius: 12px;
+    background: linear-gradient(135deg, #f97316, #ea580c);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 20px rgba(249,115,22,0.3); font-size: 20px;
+  }
+  .header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+  .header p { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+
+  /* Tabs */
+  .tabs {
+    display: flex; gap: 4px; margin-bottom: 24px; padding: 4px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    overflow-x: auto;
+  }
+  .tab {
+    padding: 10px 16px; border-radius: 9px; border: none; cursor: pointer;
+    font-size: 13px; font-weight: 500; font-family: inherit;
+    background: transparent; color: #777; transition: all 0.2s; white-space: nowrap;
+  }
+  .tab:hover { color: #aaa; }
+  .tab.active { background: var(--accent-bg); color: var(--accent); }
+
+  /* Card */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 28px; backdrop-filter: blur(20px);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.3);
+  }
+  .card h2 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .card .desc { font-size: 12.5px; color: var(--muted); margin-bottom: 24px; }
+
+  /* Section */
+  .section { margin-bottom: 24px; }
+  .section-label { font-size: 13px; font-weight: 600; color: #ccc; margin-bottom: 10px; }
+  .section-desc { font-size: 11.5px; color: var(--muted); margin-bottom: 10px; }
+
+  /* Input */
+  .input-group { display: flex; gap: 6px; margin-bottom: 6px; }
+  .input-group label { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .input-group label span.badge { font-size: 11px; color: var(--accent); }
+
+  input[type="text"], input[type="password"], textarea {
+    flex: 1; padding: 10px 14px; font-size: 13px;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px; color: #e0e0e0; font-family: 'JetBrains Mono', monospace;
+    outline: none; transition: border-color 0.2s;
+  }
+  input:focus, textarea:focus { border-color: rgba(251,146,60,0.5); }
+  input::placeholder, textarea::placeholder { color: #444; }
+  textarea { width: 100%; resize: vertical; line-height: 1.7; font-size: 12.5px; }
+
+  /* Toggle button (show/hide) */
+  .btn-icon {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px; color: #888; cursor: pointer; padding: 0 12px;
+    display: flex; align-items: center; transition: all 0.2s; font-size: 14px;
+  }
+  .btn-icon:hover { background: rgba(255,255,255,0.08); color: #ccc; }
+
+  /* Provider cards */
+  .provider-card {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; border-radius: var(--radius); cursor: pointer;
+    border: 1px solid var(--border); background: var(--surface);
+    transition: all 0.2s; margin-bottom: 8px;
+  }
+  .provider-card:hover { border-color: rgba(255,255,255,0.12); }
+  .provider-card.active { border-color: var(--accent-border); background: rgba(251,146,60,0.06); }
+  .provider-card .name { font-size: 13.5px; font-weight: 600; color: #ccc; }
+  .provider-card.active .name { color: var(--accent); }
+  .provider-card .pdesc { font-size: 11.5px; color: #777; margin-top: 2px; }
+  .provider-card .check { color: var(--accent); font-size: 18px; }
+
+  /* Chips */
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip {
+    padding: 7px 14px; border-radius: 8px; font-size: 12.5px; font-weight: 500;
+    border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03);
+    color: #999; cursor: pointer; transition: all 0.2s; font-family: inherit;
+  }
+  .chip:hover { border-color: rgba(255,255,255,0.15); color: #bbb; }
+  .chip.active { border-color: rgba(251,146,60,0.5); background: rgba(251,146,60,0.12); color: var(--accent); }
+
+  /* Toggle switch */
+  .toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 14px; border-radius: var(--radius);
+    background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);
+    margin-bottom: 10px;
+  }
+  .toggle-row .label { font-size: 13px; font-weight: 500; color: #ddd; }
+  .toggle-row .tdesc { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .toggle {
+    width: 44px; height: 24px; border-radius: 12px; border: none; cursor: pointer;
+    position: relative; transition: background 0.3s; flex-shrink: 0;
+  }
+  .toggle.on { background: linear-gradient(135deg, #f97316, #fb923c); }
+  .toggle.off { background: rgba(255,255,255,0.1); }
+  .toggle .dot {
+    width: 18px; height: 18px; border-radius: 9px; background: #fff;
+    position: absolute; top: 3px; transition: left 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+  .toggle.on .dot { left: 23px; }
+  .toggle.off .dot { left: 3px; }
+
+  /* Dictionary */
+  .dict-input { display: flex; gap: 8px; margin-bottom: 16px; }
+  .dict-list {
+    min-height: 80px; border-radius: var(--radius);
+    border: 1px solid var(--border); background: rgba(255,255,255,0.015);
+    padding: 8px; display: flex; flex-wrap: wrap; gap: 6px; align-content: flex-start;
+  }
+  .word-tag {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 10px 6px 12px; border-radius: 7px;
+    background: rgba(251,146,60,0.08); border: 1px solid rgba(251,146,60,0.15);
+    font-size: 12.5px; color: #e0a060;
+  }
+  .word-tag .remove {
+    background: none; border: none; cursor: pointer; color: #996644;
+    opacity: 0.6; font-size: 14px; padding: 0; line-height: 1;
+  }
+  .word-tag .remove:hover { opacity: 1; }
+  .suggest-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .suggest-chip {
+    padding: 5px 10px; border-radius: 6px; font-size: 11.5px;
+    border: 1px dashed rgba(255,255,255,0.1); cursor: pointer;
+    background: transparent; color: #888; font-family: inherit; transition: all 0.2s;
+  }
+  .suggest-chip:hover { border-color: rgba(255,255,255,0.2); color: #aaa; }
+  .suggest-chip.added { opacity: 0.4; cursor: default; }
+
+  /* Buttons */
+  .btn-primary {
+    padding: 10px 28px; border-radius: 9px; border: none; cursor: pointer;
+    background: linear-gradient(135deg, #f97316, #ea580c); color: #fff;
+    font-size: 14px; font-weight: 600; font-family: inherit;
+    box-shadow: 0 4px 20px rgba(249,115,22,0.3); transition: transform 0.1s;
+  }
+  .btn-primary:active { transform: scale(0.97); }
+  .btn-secondary {
+    padding: 10px 18px; border-radius: 9px; cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03);
+    color: #999; font-size: 13px; font-family: inherit; transition: all 0.2s;
+  }
+  .btn-secondary:hover { border-color: rgba(255,255,255,0.15); color: #ccc; }
+
+  /* Bottom bar */
+  .bottom-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding: 16px 0; }
+  .saved-msg { font-size: 12.5px; color: #22c55e; animation: fadeIn 0.3s ease; }
+  .footer { text-align: center; margin-top: 16px; font-size: 11px; color: #444; }
+
+  /* Info box */
+  .info-box {
+    padding: 14px 16px; border-radius: 10px;
+    background: rgba(251,146,60,0.05); border: 1px solid rgba(251,146,60,0.12);
+    font-size: 12px; color: #b0885a; line-height: 1.6; margin-top: 24px;
+  }
+  .info-box code {
+    background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px; font-size: 11px;
+  }
+
+  /* Link */
+  .link-btn {
+    font-size: 11px; color: #888; text-decoration: none; padding: 4px 10px;
+    border-radius: 6px; border: 1px solid rgba(255,255,255,0.08); transition: all 0.2s;
+  }
+  .link-btn:hover { border-color: rgba(255,255,255,0.15); color: #aaa; }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  .empty { display: flex; align-items: center; justify-content: center; height: 80px; color: #555; font-size: 13px; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: translateX(0); } }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">🎙</div>
+    <div>
+      <h1>tywan 設定中心</h1>
+      <p>語音輸入引擎 · 後臺管理</p>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" data-tab="api">🔑 API 金鑰</button>
+    <button class="tab" data-tab="voice">🎤 語音設定</button>
+    <button class="tab" data-tab="llm">⚡ LLM 修飾</button>
+    <button class="tab" data-tab="dict">📖 自訂詞彙</button>
+    <button class="tab" data-tab="general">⚙ 一般設定</button>
+  </div>
+
+  <!-- Card -->
+  <div class="card">
+
+    <!-- ═══ API Keys ═══ -->
+    <div class="tab-content active" id="tab-api">
+      <h2>API 金鑰管理</h2>
+      <p class="desc">金鑰僅儲存在本機設定檔中，不會傳送至任何第三方伺服器</p>
+
+      <div class="section">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div>
+            <div class="section-label" style="margin:0">Groq API Key</div>
+            <div class="section-desc" style="margin:0">用於 Whisper 語音辨識 · <span style="color:var(--accent)">STT 推薦</span></div>
+          </div>
+          <a class="link-btn" href="https://console.groq.com/keys" target="_blank">取得金鑰 ↗</a>
+        </div>
+        <div class="input-group">
+          <input type="password" id="key-groq" placeholder="gsk_...">
+          <button class="btn-icon" onclick="toggleVis('key-groq')">👁</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div>
+            <div class="section-label" style="margin:0">OpenAI API Key</div>
+            <div class="section-desc" style="margin:0">用於 Whisper / ChatGPT · <span style="color:var(--accent)">LLM 修飾推薦</span></div>
+          </div>
+          <a class="link-btn" href="https://platform.openai.com/api-keys" target="_blank">取得金鑰 ↗</a>
+        </div>
+        <div class="input-group">
+          <input type="password" id="key-openai" placeholder="sk-...">
+          <button class="btn-icon" onclick="toggleVis('key-openai')">👁</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div>
+            <div class="section-label" style="margin:0">Anthropic API Key</div>
+            <div class="section-desc" style="margin:0">用於 Claude 智能修飾</div>
+          </div>
+          <a class="link-btn" href="https://console.anthropic.com/settings/keys" target="_blank">取得金鑰 ↗</a>
+        </div>
+        <div class="input-group">
+          <input type="password" id="key-anthropic" placeholder="sk-ant-...">
+          <button class="btn-icon" onclick="toggleVis('key-anthropic')">👁</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">Ollama 端點</div>
+        <div class="section-desc">本地 LLM 推理伺服器位址</div>
+        <div class="input-group">
+          <input type="text" id="key-ollama" placeholder="http://localhost:11434">
+        </div>
+      </div>
+
+      <div class="info-box">
+        🔒 所有 API 金鑰儲存於本機 <code>%APPDATA%/tywan/config.json</code>，不會上傳至任何雲端服務。
+      </div>
+    </div>
+
+    <!-- ═══ Voice ═══ -->
+    <div class="tab-content" id="tab-voice">
+      <h2>語音辨識設定</h2>
+      <p class="desc">選擇 STT 引擎與語音輸入偏好</p>
+
+      <div class="section">
+        <div class="section-label">辨識引擎</div>
+        <div id="stt-providers"></div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">模型選擇</div>
+        <div class="chips" id="stt-models"></div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">辨識語言</div>
+        <div class="chips" id="languages"></div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">Push-to-Talk 快捷鍵</div>
+        <div class="section-desc">按住說話，放開後自動辨識並輸出</div>
+        <div class="chips" id="hotkeys"></div>
+      </div>
+    </div>
+
+    <!-- ═══ LLM ═══ -->
+    <div class="tab-content" id="tab-llm">
+      <h2>LLM 智能修飾</h2>
+      <p class="desc">設定用於語音後處理的大型語言模型</p>
+
+      <div class="section">
+        <div class="section-label">修飾引擎</div>
+        <div id="llm-providers"></div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">模型選擇</div>
+        <div class="chips" id="llm-models"></div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">修飾功能</div>
+        <div id="llm-features"></div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">系統提示詞</div>
+        <textarea id="system-prompt" rows="8"></textarea>
+      </div>
+    </div>
+
+    <!-- ═══ Dictionary ═══ -->
+    <div class="tab-content" id="tab-dict">
+      <h2>自訂詞彙表</h2>
+      <p class="desc">添加專有名詞、品牌名和技術術語，提升辨識準確度</p>
+
+      <div class="dict-input">
+        <input type="text" id="new-word" placeholder="輸入詞彙，按 Enter 添加...">
+        <button class="btn-primary" style="padding:0 18px;font-size:13px" onclick="addWord()">+ 添加</button>
+      </div>
+      <div class="dict-list" id="dict-list"></div>
+
+      <div>
+        <div style="font-size:12px;color:var(--muted);margin:12px 0 8px">常用建議詞彙</div>
+        <div class="suggest-chips" id="suggest-chips"></div>
+      </div>
+    </div>
+
+    <!-- ═══ General ═══ -->
+    <div class="tab-content" id="tab-general">
+      <h2>一般設定</h2>
+      <p class="desc">系統行為與輸出偏好</p>
+
+      <div class="section">
+        <div class="section-label">文字輸出方式</div>
+        <div id="output-modes"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom Bar -->
+  <div class="bottom-bar">
+    <button class="btn-secondary" onclick="exportConfig()">⬇ 匯出設定</button>
+    <div style="display:flex;gap:10px;align-items:center">
+      <span class="saved-msg" id="saved-msg" style="display:none">✅ 已儲存</span>
+      <button class="btn-primary" onclick="saveConfig()">儲存設定</button>
+    </div>
+  </div>
+
+  <div class="footer">tywan v0.1.0 · 設定檔路徑：%APPDATA%/tywan/config.json</div>
+</div>
+
+<script>
+// ── Data ──────────────────────────────────────────────────────────────────────
+const API_BASE = `http://localhost:${location.port || 18923}`;
+
+const STT_PROVIDERS = [
+  { id: "groq", name: "Groq Whisper", desc: "極快、幾乎免費", models: ["whisper-large-v3-turbo", "whisper-large-v3"] },
+  { id: "openai", name: "OpenAI Whisper", desc: "高品質、穩定", models: ["whisper-1"] },
+  { id: "local", name: "本地 Whisper", desc: "離線、免費", models: ["tiny", "base", "small", "medium", "large-v3"] },
+];
+
+const LLM_PROVIDERS = [
+  { id: "openai", name: "OpenAI ChatGPT", desc: "智能修飾首選，穩定可靠", models: ["gpt-4o-mini", "gpt-4o", "gpt-4.1-mini", "gpt-4.1-nano"] },
+  { id: "anthropic", name: "Anthropic Claude", desc: "高品質文字處理", models: ["claude-haiku-4-5-20251001", "claude-sonnet-4-5-20250929"] },
+  { id: "groq", name: "Groq (開源模型)", desc: "極快推理", models: ["llama-3.3-70b-versatile", "gemma2-9b-it"] },
+  { id: "ollama", name: "Ollama 本地", desc: "完全離線", models: ["qwen3:8b", "gemma3:4b", "llama3.2:3b"] },
+];
+
+const HOTKEYS = [
+  { id: "RightAlt", label: "Right Alt" }, { id: "RightCtrl", label: "Right Ctrl" },
+  { id: "F9", label: "F9" }, { id: "CapsLock", label: "CapsLock" }, { id: "ScrollLock", label: "Scroll Lock" },
+];
+
+const LANGUAGES = [
+  { id: "auto", label: "🌐 自動偵測" }, { id: "zh-TW", label: "🇹🇼 繁體中文" },
+  { id: "zh-CN", label: "🇨🇳 簡體中文" }, { id: "en", label: "🇺🇸 English" }, { id: "ja", label: "🇯🇵 日本語" },
+];
+
+const SUGGEST_WORDS = ["BNI", "n8n", "Activepieces", "LINE", "RAG", "Whisper", "Claude", "Blender", "Unity"];
+
+const OUTPUT_MODES = [
+  { id: "clipboard", name: "剪貼簿 + 貼上", desc: "複製到剪貼簿後模擬 Ctrl+V（推薦，支援中文）" },
+  { id: "keyboard", name: "模擬鍵盤輸入", desc: "逐字模擬按鍵輸入（僅支援英文字元）" },
+];
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let config = {};
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+async function init() {
+  try {
+    const res = await fetch(`${API_BASE}/api/config`);
+    config = await res.json();
+  } catch {
+    // 離線模式：使用預設值
+    config = {
+      sttProvider: "groq", llmProvider: "openai",
+      sttModel: "whisper-large-v3-turbo", llmModel: "gpt-4o-mini",
+      apiKeys: { groq: "", openai: "", anthropic: "", ollama: "http://localhost:11434" },
+      hotkey: "RightAlt", language: "auto", outputMode: "clipboard",
+      removeFiller: true, autoFormat: true, contextAware: true,
+      dictionary: [], systemPrompt: "",
+    };
+  }
+  render();
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function render() {
+  // API Keys
+  document.getElementById("key-groq").value = config.apiKeys?.groq || "";
+  document.getElementById("key-openai").value = config.apiKeys?.openai || "";
+  document.getElementById("key-anthropic").value = config.apiKeys?.anthropic || "";
+  document.getElementById("key-ollama").value = config.apiKeys?.ollama || "http://localhost:11434";
+
+  // STT Providers
+  renderProviders("stt-providers", STT_PROVIDERS, config.sttProvider, (id) => {
+    config.sttProvider = id;
+    config.sttModel = STT_PROVIDERS.find(p => p.id === id).models[0];
+    render();
+  });
+
+  // STT Models
+  const sttP = STT_PROVIDERS.find(p => p.id === config.sttProvider);
+  renderChips("stt-models", sttP?.models || [], config.sttModel, (m) => { config.sttModel = m; render(); });
+
+  // Languages
+  renderChips("languages", LANGUAGES.map(l => l.label), LANGUAGES.find(l => l.id === config.language)?.label,
+    (label) => { config.language = LANGUAGES.find(l => l.label === label).id; render(); });
+
+  // Hotkeys
+  renderChips("hotkeys", HOTKEYS.map(h => h.label), HOTKEYS.find(h => h.id === config.hotkey)?.label,
+    (label) => { config.hotkey = HOTKEYS.find(h => h.label === label).id; render(); });
+
+  // LLM Providers
+  renderProviders("llm-providers", LLM_PROVIDERS, config.llmProvider, (id) => {
+    config.llmProvider = id;
+    config.llmModel = LLM_PROVIDERS.find(p => p.id === id).models[0];
+    render();
+  });
+
+  // LLM Models
+  const llmP = LLM_PROVIDERS.find(p => p.id === config.llmProvider);
+  renderChips("llm-models", llmP?.models || [], config.llmModel, (m) => { config.llmModel = m; render(); });
+
+  // LLM Features
+  renderFeatures();
+
+  // System prompt
+  document.getElementById("system-prompt").value = config.systemPrompt || "";
+
+  // Dictionary
+  renderDictionary();
+
+  // Output modes
+  renderProviders("output-modes", OUTPUT_MODES, config.outputMode, (id) => { config.outputMode = id; render(); });
+}
+
+function renderProviders(containerId, providers, activeId, onClick) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = providers.map(p => `
+    <div class="provider-card ${p.id === activeId ? 'active' : ''}" onclick="(${onClick})(\'${p.id}\')">
+      <div><div class="name">${p.name}</div><div class="pdesc">${p.desc}</div></div>
+      ${p.id === activeId ? '<div class="check">✓</div>' : ''}
+    </div>
+  `).join("");
+  // Re-bind clicks properly
+  el.querySelectorAll('.provider-card').forEach((card, i) => {
+    card.onclick = () => onClick(providers[i].id);
+  });
+}
+
+function renderChips(containerId, items, activeItem, onClick) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = items.map(item => `
+    <button class="chip ${item === activeItem ? 'active' : ''}">${item}</button>
+  `).join("");
+  el.querySelectorAll('.chip').forEach((chip, i) => {
+    chip.onclick = () => onClick(items[i]);
+  });
+}
+
+function renderFeatures() {
+  const features = [
+    { key: "autoStart", label: "隨 Windows 啟動", desc: "系統開機時自動啟動 tywan" },
+    { key: "removeFiller", label: "去除口頭禪", desc: "移除「嗯」「啊」「那個」等贅字" },
+    { key: "autoFormat", label: "自動格式化", desc: "列表、步驟自動結構化" },
+    { key: "contextAware", label: "語境適應", desc: "根據當前 App 自動調整語氣" },
+  ];
+  const el = document.getElementById("llm-features");
+  el.innerHTML = features.map(f => `
+    <div class="toggle-row">
+      <div><div class="label">${f.label}</div><div class="tdesc">${f.desc}</div></div>
+      <button class="toggle ${config[f.key] ? 'on' : 'off'}" data-key="${f.key}">
+        <div class="dot"></div>
+      </button>
+    </div>
+  `).join("");
+  el.querySelectorAll('.toggle').forEach(btn => {
+    btn.onclick = () => {
+      const key = btn.dataset.key;
+      config[key] = !config[key];
+      render();
+    };
+  });
+}
+
+function renderDictionary() {
+  const list = document.getElementById("dict-list");
+  const dict = config.dictionary || [];
+  if (dict.length === 0) {
+    list.innerHTML = '<div class="empty">尚未添加任何詞彙</div>';
+  } else {
+    list.innerHTML = dict.map(w => `
+      <div class="word-tag">${w}<button class="remove" data-word="${w}">✕</button></div>
+    `).join("");
+    list.querySelectorAll('.remove').forEach(btn => {
+      btn.onclick = () => { removeWord(btn.dataset.word); };
+    });
+  }
+
+  // Suggest chips
+  const suggest = document.getElementById("suggest-chips");
+  suggest.innerHTML = SUGGEST_WORDS.map(w => `
+    <button class="suggest-chip ${dict.includes(w) ? 'added' : ''}" ${dict.includes(w) ? 'disabled' : ''}>+ ${w}</button>
+  `).join("");
+  suggest.querySelectorAll('.suggest-chip:not(.added)').forEach((btn, i) => {
+    btn.onclick = () => {
+      const w = SUGGEST_WORDS.filter(w => !dict.includes(w))[i];
+      if (w) addWordDirect(w);
+    };
+  });
+}
+
+// ── Actions ───────────────────────────────────────────────────────────────────
+function toggleVis(id) {
+  const input = document.getElementById(id);
+  input.type = input.type === "password" ? "text" : "password";
+}
+
+function addWord() {
+  const input = document.getElementById("new-word");
+  const w = input.value.trim();
+  if (w && !(config.dictionary || []).includes(w)) {
+    if (!config.dictionary) config.dictionary = [];
+    config.dictionary.push(w);
+    input.value = "";
+    render();
+  }
+  input.focus();
+}
+
+function addWordDirect(w) {
+  if (!config.dictionary) config.dictionary = [];
+  if (!config.dictionary.includes(w)) {
+    config.dictionary.push(w);
+    render();
+  }
+}
+
+function removeWord(w) {
+  config.dictionary = (config.dictionary || []).filter(x => x !== w);
+  render();
+}
+
+// Enter to add word
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("new-word")?.addEventListener("keydown", e => {
+    if (e.key === "Enter") addWord();
+  });
+});
+
+async function saveConfig() {
+  // Collect API keys from inputs
+  config.apiKeys = {
+    groq: document.getElementById("key-groq").value,
+    openai: document.getElementById("key-openai").value,
+    anthropic: document.getElementById("key-anthropic").value,
+    ollama: document.getElementById("key-ollama").value,
+  };
+  config.systemPrompt = document.getElementById("system-prompt").value;
+
+  try {
+    await fetch(`${API_BASE}/api/config`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(config),
+    });
+  } catch {
+    // 離線模式
+  }
+
+  const msg = document.getElementById("saved-msg");
+  msg.style.display = "inline";
+  setTimeout(() => msg.style.display = "none", 2000);
+}
+
+function exportConfig() {
+  config.apiKeys = {
+    groq: document.getElementById("key-groq").value,
+    openai: document.getElementById("key-openai").value,
+    anthropic: document.getElementById("key-anthropic").value,
+    ollama: document.getElementById("key-ollama").value,
+  };
+  config.systemPrompt = document.getElementById("system-prompt").value;
+
+  const blob = new Blob([JSON.stringify(config, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "tywan-config.json";
+  a.click();
+}
+
+// ── Tab switching ─────────────────────────────────────────────────────────────
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.onclick = () => {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById(`tab-${tab.dataset.tab}`).classList.add("active");
+  };
+});
+
+// ── Start ─────────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+# ══════════════════════════════════════════════════════════════
+# VoiceType - Dependencies
+# ══════════════════════════════════════════════════════════════
+
+# ── 音訊錄製 ──
+sounddevice>=0.4.6
+numpy>=1.24.0
+
+# ── 全域快捷鍵 ──
+keyboard>=0.13.5
+
+# ── 文字注入 ──
+pyperclip>=1.8.2
+pyautogui>=0.9.54
+
+# ── 系統托盤 ──
+pystray>=0.19.5
+Pillow>=10.0.0
+
+# ── API 客戶端 ──
+openai>=1.30.0          # OpenAI + Groq (相容介面)
+anthropic>=0.28.0       # Anthropic Claude
+requests>=2.31.0        # Ollama HTTP 呼叫
+
+# ── Windows 限定（偵測當前視窗）──
+# pywin32>=306           # 取消註解以啟用語境偵測功能
+                         # pip install pywin32 --break-system-packages
+
+# ── 本地 Whisper（選用）──
+# faster-whisper>=1.0.0  # 取消註解以啟用本地語音辨識
+                         # 需要 CUDA 或 CPU 推理
+
+# ── 打包成 exe ──
+# pyinstaller>=6.0       # 取消註解以打包發佈

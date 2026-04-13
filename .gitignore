@@ -1,29 +1,23 @@
-# Dependencies
-node_modules/
-venv/
+# Python
 __pycache__/
 *.pyc
+*.pyo
 
-# Environment
-.env
-.env.local
-.env.*.local
-
-# Build
-dist/
+# PyInstaller
 build/
-*.egg-info/
+dist/
+*.spec
+
+# Config (contains API keys)
+config.json
 
 # IDE
 .vscode/
 .idea/
-*.swp
-*.swo
+
+# Claude Code
+.claude/
 
 # OS
-.DS_Store
 Thumbs.db
-
-# Logs
-*.log
-npm-debug.log*
+Desktop.ini
