@@ -1,4 +1,4 @@
-const { globalShortcut, BrowserWindow } = require('electron');
+const { BrowserWindow } = require('electron');
 const path = require('path');
 const koffi = require('koffi');
 const { getStore } = require('./store');
@@ -10,14 +10,15 @@ const { typeText, copyToClipboard } = require('./typer');
 
 let recorderWindow = null;
 let isRecording = false;
-let keyPollTimer = null;
+let detectTimer = null;
+let prevRAltDown = false;
 
 // Windows API: GetAsyncKeyState
 const user32 = koffi.load('user32.dll');
 const GetAsyncKeyState = user32.func('short __stdcall GetAsyncKeyState(int vKey)');
 
 // Virtual Key Codes
-const VK_LMENU = 0xA4;  // Left Alt
+const VK_RMENU = 0xA5;  // Right Alt
 const VK_SPACE = 0x20;  // Space
 
 function isKeyDown(vk) {
@@ -49,23 +50,29 @@ function createRecorderWindow() {
   return recorderWindow;
 }
 
-// 註冊全域快捷鍵
+// 啟動按鍵偵測：偵測 Right Alt 的「按下瞬間」做切換
 function registerShortcut() {
-  globalShortcut.unregisterAll();
+  if (detectTimer) clearInterval(detectTimer);
+  prevRAltDown = false;
 
-  const success = globalShortcut.register('Alt+Space', () => {
-    if (!isRecording) {
-      startRecording();
+  // 每 50ms 檢查 Right Alt 是否從鬆開→按下（rising edge）
+  detectTimer = setInterval(() => {
+    const rAltDown = isKeyDown(VK_RMENU);
+
+    // 只在「鬆開→按下」的瞬間觸發一次（避免按住時連續觸發）
+    if (rAltDown && !prevRAltDown) {
+      if (!isRecording) {
+        startRecording();
+      } else {
+        stopRecordingAndProcess();
+      }
     }
-  });
 
-  if (success) {
-    console.log('快捷鍵已註冊：按住 Left Alt + Space 錄音，放開停止');
-  } else {
-    console.error('快捷鍵 Alt+Space 註冊失敗');
-  }
+    prevRAltDown = rAltDown;
+  }, 50);
 
-  return success;
+  console.log('按鍵偵測已啟動：按 Right Alt 開始錄音，再按一次停止');
+  return true;
 }
 
 // 開始錄音
@@ -76,30 +83,13 @@ function startRecording() {
 
   const win = createRecorderWindow();
   win.webContents.send('start-recording');
-  console.log('開始錄音');
-
-  // 每 80ms 檢查按鍵是否放開
-  keyPollTimer = setInterval(() => {
-    const altDown = isKeyDown(VK_LMENU);
-    const spaceDown = isKeyDown(VK_SPACE);
-
-    // 只要 Alt 或 Space 其中一個放開，就停止錄音
-    if (!altDown || !spaceDown) {
-      stopRecordingAndProcess();
-    }
-  }, 80);
+  console.log('開始錄音（再按一次 Right Alt 停止）');
 }
 
 // 停止錄音並處理
 function stopRecordingAndProcess() {
   if (!isRecording) return;
   isRecording = false;
-
-  // 停止輪詢
-  if (keyPollTimer) {
-    clearInterval(keyPollTimer);
-    keyPollTimer = null;
-  }
 
   const win = createRecorderWindow();
   win.webContents.send('stop-recording');
@@ -158,11 +148,10 @@ async function handleAudioData(audioBuffer) {
 }
 
 function unregisterShortcut() {
-  if (keyPollTimer) {
-    clearInterval(keyPollTimer);
-    keyPollTimer = null;
+  if (detectTimer) {
+    clearInterval(detectTimer);
+    detectTimer = null;
   }
-  globalShortcut.unregisterAll();
 }
 
 module.exports = { registerShortcut, unregisterShortcut, handleAudioData, createRecorderWindow };
