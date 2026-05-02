@@ -40,21 +40,8 @@
       "assets/**/*"
     ],
     "win": {
-      "target": [
-        "nsis",
-        "portable"
-      ],
+      "target": "portable",
       "icon": "assets/icon.ico"
-    },
-    "nsis": {
-      "oneClick": true,
-      "allowToChangeInstallationDirectory": false,
-      "installerIcon": "assets/icon.ico",
-      "uninstallerIcon": "assets/icon.ico",
-      "shortcutName": "NoType"
-    },
-    "portable": {
-      "artifactName": "NoType-Portable-${version}.exe"
     }
   }
 }
