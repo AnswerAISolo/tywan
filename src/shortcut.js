@@ -1,6 +1,13 @@
 const { BrowserWindow } = require('electron');
 const path = require('path');
+const fs = require('fs');
 const koffi = require('koffi');
+
+const LOG_PATH = path.join(require('os').homedir(), 'notype-error.log');
+function logError(msg) {
+  const line = `[${new Date().toISOString()}] ${msg}\n`;
+  fs.appendFileSync(LOG_PATH, line);
+}
 const { getStore } = require('./store');
 const { showOverlay, hideOverlay, saveAudioBuffer, cleanupTempAudio } = require('./recorder');
 const { transcribeWithWhisper } = require('./api/whisper');
@@ -10,8 +17,12 @@ const { typeText, copyToClipboard } = require('./typer');
 
 let recorderWindow = null;
 let isRecording = false;
+let isBusy = false;        // true 時 STT/LLM 正在跑，封鎖新的錄音
+let recordingStartTime = 0;
 let detectTimer = null;
 let prevRAltDown = false;
+
+const MIN_RECORDING_MS = 500; // 低於此時長的錄音直接丟棄
 
 // Windows API: GetAsyncKeyState
 const user32 = koffi.load('user32.dll');
@@ -61,7 +72,9 @@ function registerShortcut() {
 
     // 只在「鬆開→按下」的瞬間觸發一次（避免按住時連續觸發）
     if (rAltDown && !prevRAltDown) {
-      if (!isRecording) {
+      if (isBusy) {
+        console.log('處理中，忽略按鍵');
+      } else if (!isRecording) {
         startRecording();
       } else {
         stopRecordingAndProcess();
@@ -79,6 +92,7 @@ function registerShortcut() {
 function startRecording() {
   if (isRecording) return;
   isRecording = true;
+  recordingStartTime = Date.now();
   showOverlay('recording');
 
   const win = createRecorderWindow();
@@ -97,9 +111,19 @@ function stopRecordingAndProcess() {
   if (!isRecording) return;
   isRecording = false;
 
-  const win = createRecorderWindow();
-  if (win && !win.isDestroyed()) {
-    win.webContents.send('stop-recording');
+  const duration = Date.now() - recordingStartTime;
+  if (duration < MIN_RECORDING_MS) {
+    console.log(`錄音太短（${duration}ms），丟棄`);
+    hideOverlay();
+    if (recorderWindow && !recorderWindow.isDestroyed()) {
+      recorderWindow.webContents.send('cancel-recording');
+    }
+    return;
+  }
+
+  // 直接用模組層級的 recorderWindow，不重新建立
+  if (recorderWindow && !recorderWindow.isDestroyed()) {
+    recorderWindow.webContents.send('stop-recording');
     console.log('停止錄音，開始處理');
   } else {
     console.error('錄音視窗不可用，停止失敗');
@@ -110,6 +134,7 @@ function stopRecordingAndProcess() {
 // 處理錄音完成的音訊資料
 async function handleAudioData(audioBuffer) {
   const store = getStore();
+  isBusy = true;
 
   try {
     const audioPath = saveAudioBuffer(audioBuffer);
@@ -150,11 +175,14 @@ async function handleAudioData(audioBuffer) {
     showOverlay('done');
     setTimeout(hideOverlay, 1500);
   } catch (err) {
+    const msg = err.message || '未知錯誤';
     console.error('處理錄音失敗:', err);
-    showOverlay('error');
-    setTimeout(hideOverlay, 3000);
+    logError(msg + '\n' + (err.stack || ''));
+    showOverlay(msg);
+    setTimeout(hideOverlay, 5000);
   } finally {
     cleanupTempAudio();
+    isBusy = false;
   }
 }
 

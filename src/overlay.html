@@ -76,10 +76,12 @@
           dot.className = 'dot done';
           text.textContent = '✓ 完成';
           break;
-        case 'error':
+        default:
+          // status 是錯誤訊息字串
           dot.className = 'dot';
           dot.style.background = '#ff8800';
-          text.textContent = '⚠ 錯誤';
+          dot.style.animation = 'none';
+          text.textContent = '⚠ ' + status;
           break;
       }
     });

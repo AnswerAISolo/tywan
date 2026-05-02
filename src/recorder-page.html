@@ -6,6 +6,7 @@
   let mediaRecorder = null;
   let audioChunks = [];
   let stream = null;
+  let cancelled = false;
 
   // 初始化麥克風
   async function initMicrophone() {
@@ -37,6 +38,10 @@
       };
 
       mediaRecorder.onstop = async () => {
+        if (cancelled) {
+          cancelled = false;
+          return;
+        }
         const blob = new Blob(audioChunks, { type: 'audio/webm' });
         const buffer = await blob.arrayBuffer();
         window.recorderBridge.sendAudioData(Array.from(new Uint8Array(buffer)));
@@ -51,6 +56,14 @@
   // 停止錄音
   window.recorderBridge.onStopRecording(() => {
     if (mediaRecorder && mediaRecorder.state === 'recording') {
+      mediaRecorder.stop();
+    }
+  });
+
+  // 取消錄音（太短，丟棄音訊不送出）
+  window.recorderBridge.onCancelRecording(() => {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      cancelled = true;
       mediaRecorder.stop();
     }
   });

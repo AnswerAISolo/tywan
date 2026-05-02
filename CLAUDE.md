@@ -76,6 +76,13 @@ NoType 是一個 AI 語音輸入工具，讓使用者不需要打字，透過語
 | 2026-04-12 | 專案初始化 | ✅ |
 | 2026-04-12 | 完成 v0.1：骨架、設定頁、錄音、STT、LLM、鍵盤輸入 | 待推送 |
 | 2026-04-12 | 修正圖示（SVG→PNG）、快捷鍵（toggle→按住）、鍵盤卡住問題 | 待推送 |
+| 2026-05-02 | 修正 4 個不穩定問題（見下方 #7）；換 LLM model | 待推送 |
+
+### 7. 不穩定問題修正（2026-05-02）
+- **LLM 429**：`llama-3.3-70b-versatile` 帳號無開放 → 換成 `llama-3.1-8b-instant`
+- **Race condition**：`handleAudioData` 執行期間（5-10 秒）再按 Right Alt 會開新錄音 → 加 `isBusy` 鎖
+- **誤觸保護**：錄音低於 500ms 直接丟棄，不送 API
+- **孤兒視窗**：`stopRecordingAndProcess` 原本呼叫 `createRecorderWindow()` 會建多餘視窗 → 改用模組層級變數
 
 ## 資料夾結構
 ```
