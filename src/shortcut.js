@@ -82,8 +82,14 @@ function startRecording() {
   showOverlay('recording');
 
   const win = createRecorderWindow();
-  win.webContents.send('start-recording');
-  console.log('開始錄音（再按一次 Right Alt 停止）');
+  if (win && !win.isDestroyed()) {
+    win.webContents.send('start-recording');
+    console.log('開始錄音（再按一次 Right Alt 停止）');
+  } else {
+    console.error('錄音視窗初始化失敗');
+    isRecording = false;
+    hideOverlay();
+  }
 }
 
 // 停止錄音並處理
@@ -92,8 +98,13 @@ function stopRecordingAndProcess() {
   isRecording = false;
 
   const win = createRecorderWindow();
-  win.webContents.send('stop-recording');
-  console.log('停止錄音，開始處理');
+  if (win && !win.isDestroyed()) {
+    win.webContents.send('stop-recording');
+    console.log('停止錄音，開始處理');
+  } else {
+    console.error('錄音視窗不可用，停止失敗');
+    hideOverlay();
+  }
 }
 
 // 處理錄音完成的音訊資料

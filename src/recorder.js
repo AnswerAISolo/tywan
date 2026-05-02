@@ -44,8 +44,10 @@ function createOverlay() {
 
 function showOverlay(status) {
   const win = createOverlay();
-  win.webContents.send('update-status', status);
-  win.show();
+  if (win && !win.isDestroyed()) {
+    win.webContents.send('update-status', status);
+    win.show();
+  }
 }
 
 function hideOverlay() {
